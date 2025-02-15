@@ -8,9 +8,9 @@ exports.default = (0, vite_1.defineConfig)({
   build: {
     lib: {
       entry: (0, path_1.resolve)(__dirname, "src/index.ts"),
-      formats: ["es"],
-    },
+      formats: ["es"]
+    }
   },
   resolve: { alias: { src: (0, path_1.resolve)("src/") } },
-  plugins: [(0, vite_plugin_dts_1.default)()],
+  plugins: [(0, vite_plugin_dts_1.default)()]
 });

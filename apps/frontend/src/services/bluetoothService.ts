@@ -43,7 +43,9 @@ const bendBleAdsOneAxisAngleDecoder = (
       angle1: +raw.getFloat32(0, true).toFixed(4),
       stretch: +raw.getFloat32(4, true).toFixed(4)
     };
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
 
   return {
     timestamp: Date.now(),
