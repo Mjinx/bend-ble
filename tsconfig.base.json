@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "useUnknownInCatchVariables": true,
+    "noImplicitAny": true
+  }
+}

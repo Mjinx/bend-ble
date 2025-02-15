@@ -1,0 +1,5 @@
+coverage
+apps/frontend2/public
+dist
+pnpm-lock.yaml
+pnpm-workspace.yaml
