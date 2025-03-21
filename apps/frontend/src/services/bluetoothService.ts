@@ -8,7 +8,8 @@ export const EVENT_NAME = "BleNotification";
 export interface IBluetoothService {
   requestDevice(
     options: RequestDeviceOptions,
-    sampleRate: SamplePerSeconds
+    sampleRate: SamplePerSeconds,
+    enableStretch: boolean
   ): Promise<boolean>;
 
   disconnect(): void;
@@ -64,16 +65,19 @@ export class BluetoothService implements IBluetoothService {
   private abortCtrl?: AbortController;
   private notifications: Record<string, AbortController> = {};
   private sampleRate: number = 10;
+  private enableStretch: boolean = false;
 
   async requestDevice(
     options: RequestDeviceOptions,
-    sampleRate: SamplePerSeconds
+    sampleRate: SamplePerSeconds,
+    enableStretch: boolean
   ): Promise<boolean> {
     if (this.abortCtrl != null) {
       this.abortCtrl.abort("request new device.");
     }
 
     this.sampleRate = sampleRate;
+    this.enableStretch = enableStretch;
 
     options = options ?? {
       acceptAllDevices: true,
@@ -245,12 +249,12 @@ export class BluetoothService implements IBluetoothService {
           command1
         );
 
-        /*const command2 = Uint8Array.of(1, 0x80);
+        const command2 = Uint8Array.of(this.enableStretch ? 1 : 0, 0x80);
         await this.writeCharacteristic(
           BendBleServiceUuids.ANGLE_SERVICE_UUID,
           BendBleCharUuids.ANGLE,
           command2
-        );*/
+        );
 
         await this.listenToAngleNotifications();
       },
@@ -443,7 +447,7 @@ export class BluetoothService implements IBluetoothService {
         const data = bendBleAdsOneAxisAngleDecoder(target.value!, context);
         globalEventEmitter.dispatchEvent(
           new CustomEvent<StreamPayload>(EVENT_NAME, {
-            detail: { timestamp: data.timestamp, value: data.angle1 ?? 0 }
+            detail: { timestamp: data.timestamp, value: data.angle1 ?? 0, value2: data.stretch ?? -1 }
           })
         );
       };

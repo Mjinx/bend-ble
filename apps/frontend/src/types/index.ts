@@ -1,4 +1,4 @@
-export type StreamPayload = { timestamp: number; value: number };
+export type StreamPayload = { timestamp: number; value: number, value2: number };
 export type StreamSubscription = {
   subscribe: (callback: { (data: StreamPayload): void }) => () => void;
 };

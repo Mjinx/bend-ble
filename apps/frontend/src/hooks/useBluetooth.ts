@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { bleService, IBluetoothService } from "../services/bluetoothService.ts";
+import { BendBleCharUuids, BendBleServiceUuids } from "../types";
 
 export type SamplePerSeconds = 1 | 10 | 20 | 50 | 100 | 200 | 333 | 500;
 export type BluetoothState = "disconnected" | "paired";
@@ -9,10 +10,13 @@ export interface BluetoothContextType {
 
   connect(
     options: RequestDeviceOptions,
-    sampleRate: SamplePerSeconds
+    sampleRate: SamplePerSeconds,
+    enableStretch: boolean
   ): Promise<void>;
 
   disconnect(): void;
+
+  enableStretch(enable: boolean): Promise<void>;
 }
 
 const useBluetooth = (): BluetoothContextType => {
@@ -22,7 +26,8 @@ const useBluetooth = (): BluetoothContextType => {
   const connect = useCallback(
     async (
       options: RequestDeviceOptions,
-      sampleRate: SamplePerSeconds
+      sampleRate: SamplePerSeconds,
+      enableStretch: boolean
     ): Promise<void> => {
       if (!bluetoothServiceRef.current) {
         throw new Error("Bluetooth service not initialized.");
@@ -30,7 +35,8 @@ const useBluetooth = (): BluetoothContextType => {
 
       const paired = await bluetoothServiceRef.current.requestDevice(
         options,
-        sampleRate
+        sampleRate,
+        enableStretch
       );
 
       if (paired) {
@@ -53,9 +59,25 @@ const useBluetooth = (): BluetoothContextType => {
     setState("disconnected");
   }, [state]);
 
+  const enableStretch = useCallback(
+    async (enable: boolean) => {
+      if (!bluetoothServiceRef.current || state === "disconnected") {
+        return;
+      }
+
+      const command = Uint8Array.of(enable ? 1 : 0, 0x80);
+      await bluetoothServiceRef.current.writeCharacteristic(
+        BendBleServiceUuids.ANGLE_SERVICE_UUID,
+        BendBleCharUuids.ANGLE,
+        command
+      );
+    },
+    [state]
+  );
+
   return useMemo(
-    () => ({ state, connect, disconnect }),
-    [state, connect, disconnect]
+    () => ({ state, connect, disconnect, enableStretch }),
+    [state, connect, disconnect, enableStretch]
   );
 };
 

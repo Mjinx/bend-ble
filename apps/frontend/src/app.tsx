@@ -12,8 +12,9 @@ import { BendBleServiceUuids } from "./types";
 const processor = new DataProcessor(2000); // 2-second window
 
 const App = () => {
-  const { state, connect, disconnect } = useBluetooth();
+  const { state, connect, disconnect, enableStretch } = useBluetooth();
   const [selectedItem, setSelectedItem] = useState<SamplePerSeconds>(10);
+  const [stretch, setStretch] = useState<boolean>(false);
 
   const handleSelectionChange = useCallback((value: SamplePerSeconds) => {
     setSelectedItem(value);
@@ -39,12 +40,17 @@ const App = () => {
       optionalServices: [BendBleServiceUuids.ANGLE_SERVICE_UUID]
     };
 
-    await connect(scanOptions, selectedItem);
-  }, [connect, selectedItem]);
+    await connect(scanOptions, selectedItem, stretch);
+  }, [connect, selectedItem, stretch]);
 
   const handleBleDisconnect = useCallback(() => {
     disconnect();
   }, [disconnect]);
+
+  const handleToggleStretch = useCallback(async () => {
+    await enableStretch(!stretch);
+    setStretch((previous) => !previous);
+  }, [enableStretch, stretch]);
 
   const handleExport = () => {
     processor.downloadCSV();
@@ -60,6 +66,15 @@ const App = () => {
   return (
     <>
       <h2>Bluetooth ({state})</h2>
+      <div>
+        <input
+          type="checkbox"
+          id="checkbox"
+          checked={stretch}
+          onChange={handleToggleStretch}
+        />
+        <label htmlFor="checkbox">Enable stretch measurement</label>
+      </div>
       {
         {
           paired: state == "paired" && (

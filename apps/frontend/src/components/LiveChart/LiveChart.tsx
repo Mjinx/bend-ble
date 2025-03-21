@@ -29,34 +29,6 @@ const LiveChart = ({ dataStream }: Props) => {
     return () => unsubscribe();
   }, [dataStream]);
 
-  /*useEffect(() => {
-    if (!eventData) {
-      return;
-    }
-
-    setData((prev) => {
-      const updatedData = [...prev, eventData];
-      return updatedData.length > MAX_POINTS
-        ? updatedData.slice(1)
-        : updatedData;
-    });
-  }, [eventData]);*/
-
-  /*useEffect(() => {
-    const handleNewData = (newPoint: StreamPayload) => {
-      setData((prevData) => {
-        const updatedData = [...prevData, newPoint];
-        return updatedData.length > MAX_POINTS
-          ? updatedData.slice(1)
-          : updatedData;
-      });
-    };
-
-    const unsubscribe = dataStream.subscribe(handleNewData);
-
-    return () => unsubscribe(); // Cleanup on unmount
-  }, [dataStream]);*/
-
   return (
     <LineChart width={600} height={300} data={data}>
       <CartesianGrid strokeDasharray="3 3" />
@@ -64,10 +36,10 @@ const LiveChart = ({ dataStream }: Props) => {
         dataKey="timestamp"
         tickFormatter={(tick) => new Date(tick).toLocaleTimeString()}
       />
-
       <YAxis />
       <Tooltip />
       <Line type="monotone" dataKey="value" stroke="#8884d8" dot={false} />
+      <Line type="monotone" dataKey="value2" stroke="#a067f8" dot={false} />
     </LineChart>
   );
 };

@@ -1,22 +1,22 @@
 import { StreamPayload } from "../types";
 
 export class DataProcessor {
-  private buffer: number[] = [];
+  private buffer: [number, number][] = [];
   private startTime: number = 0;
   private finalData: StreamPayload[] = [];
 
   constructor(private readonly interval: number = 2000) {}
 
-  addSample({ timestamp, value }: StreamPayload) {
+  addSample({ timestamp, value, value2 }: StreamPayload) {
     if (this.startTime === 0) {
       this.startTime = timestamp;
     }
     if (timestamp - this.startTime < this.interval) {
-      this.buffer.push(value);
+      this.buffer.push([value, value2]);
     } else {
       this.processWindow();
       this.startTime = timestamp;
-      this.buffer = [value];
+      this.buffer = [[value, value2]];
     }
   }
 
@@ -25,15 +25,22 @@ export class DataProcessor {
     if (len <= 0) {
       return;
     }
-    const avgValue = this.buffer.reduce((sum, val) => sum + val, 0) / len;
-    this.finalData.push({ timestamp: this.startTime, value: avgValue });
+    const avgValue = this.buffer.reduce(
+      (sum, [value1, value2]) => [sum[0] + value1, sum[1] + value2],
+      [0, 0]
+    );
+    this.finalData.push({
+      timestamp: this.startTime,
+      value: avgValue[0] / len,
+      value2: avgValue[1] / len
+    });
   }
 
   getCSV() {
     this.processWindow(); // Ensure last window is processed
-    const header = "Timestamp,Value\n";
+    const header = "Timestamp,Value,Stretch\n";
     const rows = this.finalData
-      .map((d) => `${d.timestamp},${d.value}`)
+      .map((d) => `${d.timestamp},${d.value},${d.value2}`)
       .join("\n");
     return header + rows;
   }
